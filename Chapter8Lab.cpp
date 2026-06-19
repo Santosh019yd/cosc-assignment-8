@@ -63,7 +63,14 @@ int main()
         cout << "7. Quit\n";
         cout << "Enter choice: ";
 
-        cin >> choice;
+        if (!(cin >> choice))
+        {
+            cin.clear();
+            cin.ignore(1000, '\n');
+            cout << "Invalid input.\n";
+            continue;
+        }
+
         cin.ignore(1000, '\n');
 
         switch (choice)
@@ -73,17 +80,37 @@ int main()
                 break;
 
             case 2:
-                calcAverages(scores, averages, grades, count);
-                cout << "Averages and grades calculated.\n";
+                if (count == 0)
+                {
+                    cout << "Please load roster data first.\n";
+                }
+                else
+                {
+                    calcAverages(scores, averages, grades, count);
+                    cout << "Averages and grades calculated.\n";
+                }
                 break;
 
             case 3:
-                sortRoster(names, scores, averages, grades, count);
-                cout << "Roster sorted alphabetically.\n";
+                if (count == 0)
+                {
+                    cout << "Please load roster data first.\n";
+                }
+                else
+                {
+                    sortRoster(names, scores, averages, grades, count);
+                    cout << "Roster sorted alphabetically.\n";
+                }
                 break;
 
             case 4:
             {
+                if (count == 0)
+                {
+                    cout << "Please load roster data first.\n";
+                    break;
+                }
+
                 char target[31];
 
                 cout << "Enter student name to search: ";
@@ -129,15 +156,19 @@ void readRoster(char names[][31],
                 int scores[][NUM_TESTS],
                 int& count)
 {
-    cout << "Enter number of students (1-10): ";
-    cin >> count;
+    do
+    {
+        cout << "Enter number of students (1-10): ";
+        cin >> count;
+
+        if (count < 1 || count > MAX_STUDENTS)
+        {
+            cout << "Invalid number. Please try again.\n";
+        }
+
+    } while (count < 1 || count > MAX_STUDENTS);
+
     cin.ignore(1000, '\n');
-
-    if (count < 1)
-        count = 1;
-
-    if (count > MAX_STUDENTS)
-        count = MAX_STUDENTS;
 
     for (int i = 0; i < count; i++)
     {
@@ -146,11 +177,20 @@ void readRoster(char names[][31],
 
         for (int j = 0; j < NUM_TESTS; j++)
         {
-            cout << "Enter test score "
-                 << (j + 1)
-                 << ": ";
+            do
+            {
+                cout << "Enter test score "
+                     << (j + 1)
+                     << " (0-100): ";
 
-            cin >> scores[i][j];
+                cin >> scores[i][j];
+
+                if (scores[i][j] < 0 || scores[i][j] > 100)
+                {
+                    cout << "Invalid score. Try again.\n";
+                }
+
+            } while (scores[i][j] < 0 || scores[i][j] > 100);
         }
 
         cin.ignore(1000, '\n');
@@ -207,7 +247,6 @@ void sortRoster(char names[][31],
         if (minIndex != start)
         {
             char tempName[31];
-
             strcpy(tempName, names[start]);
             strcpy(names[start], names[minIndex]);
             strcpy(names[minIndex], tempName);
@@ -297,29 +336,19 @@ void printStats(const double averages[],
         return;
     }
 
-    double local[MAX_STUDENTS] = {};
+    double high = averages[0];
+    double low = averages[0];
+    double total = 0.0;
 
     for (int i = 0; i < count; i++)
     {
-        local[i] = averages[i];
-    }
+        if (averages[i] > high)
+            high = averages[i];
 
-    double high = local[0];
-    double low = local[0];
-    double total = 0.0;
+        if (averages[i] < low)
+            low = averages[i];
 
-    for (auto value : local)
-    {
-        if (value == 0)
-            continue;
-
-        if (value > high)
-            high = value;
-
-        if (value < low)
-            low = value;
-
-        total += value;
+        total += averages[i];
     }
 
     cout << fixed << setprecision(2);
